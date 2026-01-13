@@ -1,21 +1,224 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>HTML Paint</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Web Paint</title>
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background: #1e1e1e;
+    color: white;
+    display: flex;
+    height: 100vh;
+}
+
+/* ===== TOP BAR ===== */
+#topbar {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 30px;
+    background: #333;
+    display: flex;
+    align-items: center;
+    padding-left: 10px;
+    z-index: 10;
+}
+
+#fileMenu {
+    position: relative;
+    cursor: pointer;
+}
+
+#fileDropdown {
+    display: none;
+    position: absolute;
+    top: 30px;
+    left: 0;
+    background: #444;
+    border: 1px solid #000;
+}
+
+#fileDropdown div {
+    padding: 5px 20px;
+    cursor: pointer;
+}
+
+#fileDropdown div:hover {
+    background: #666;
+}
+
+/* ===== SIDEBAR ===== */
+#sidebar {
+    width: 100px;
+    background: #2a2a2a;
+    padding-top: 40px;
+    display: flex;
+    flex-direction: column;
+}
+
+.tool {
+    padding: 10px;
+    border-bottom: 1px solid #000;
+    text-align: center;
+    cursor: pointer;
+}
+
+.tool.active {
+    background: #555;
+}
+
+/* ===== MAIN ===== */
+#main {
+    flex: 1;
+    padding-top: 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+canvas {
+    background: white;
+    border: 2px solid black;
+    cursor: crosshair;
+}
+
+/* ===== CONTROLS ===== */
+#controls {
+    position: fixed;
+    bottom: 10px;
+    left: 120px;
+    display: flex;
+    gap: 10px;
+    background: #333;
+    padding: 5px;
+}
+</style>
 </head>
 <body>
 
-  <div id="toolbar">
-    <input type="color" id="color" value="#000000">
-    <input type="range" id="size" min="1" max="20" value="4">
-    <button id="clear">Limpiar</button>
-    <button id="save">Guardar PNG</button>
-  </div>
+<!-- TOP BAR -->
+<div id="topbar">
+    <div id="fileMenu">File
+        <div id="fileDropdown">
+            <div id="export">Export</div>
+            <div id="import">Import</div>
+        </div>
+    </div>
+</div>
 
-  <canvas id="canvas" width="800" height="500"></canvas>
+<!-- SIDEBAR -->
+<div id="sidebar">
+    <div class="tool active" data-tool="brush">Brush</div>
+    <div class="tool" data-tool="fill">Fill</div>
+    <div class="tool" data-tool="delete">Delete</div>
+</div>
 
-  <script src="script.js"></script>
+<!-- MAIN -->
+<div id="main">
+    <canvas id="canvas" width="800" height="500"></canvas>
+</div>
+
+<!-- CONTROLS -->
+<div id="controls">
+    Color <input type="color" id="color" value="#000000">
+    Size <input type="range" id="size" min="1" max="30" value="5">
+</div>
+
+<input type="file" id="fileInput" accept="image/*" hidden>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let drawing = false;
+let tool = "brush";
+
+const color = document.getElementById("color");
+const size = document.getElementById("size");
+
+/* ===== FILE MENU ===== */
+const fileMenu = document.getElementById("fileMenu");
+const dropdown = document.getElementById("fileDropdown");
+
+fileMenu.onclick = () => {
+    dropdown.style.display =
+        dropdown.style.display === "block" ? "none" : "block";
+};
+
+/* ===== TOOLS ===== */
+document.querySelectorAll(".tool").forEach(btn => {
+    btn.onclick = () => {
+        document.querySelectorAll(".tool").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        tool = btn.dataset.tool;
+    };
+});
+
+/* ===== DRAWING ===== */
+canvas.addEventListener("mousedown", () => drawing = true);
+canvas.addEventListener("mouseup", () => drawing = false);
+canvas.addEventListener("mouseleave", () => drawing = false);
+
+canvas.addEventListener("mousemove", e => {
+    if (!drawing || tool !== "brush") return;
+
+    ctx.fillStyle = color.value;
+    ctx.beginPath();
+    ctx.arc(e.offsetX, e.offsetY, size.value, 0, Math.PI * 2);
+    ctx.fill();
+});
+
+/* ===== FILL ===== */
+canvas.addEventListener("click", () => {
+    if (tool === "fill") {
+        ctx.fillStyle = color.value;
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+    }
+});
+
+/* ===== DELETE ===== */
+canvas.addEventListener("click", e => {
+    if (tool === "delete") {
+        ctx.clearRect(
+            e.offsetX - 20,
+            e.offsetY - 20,
+            40,
+            40
+        );
+    }
+});
+
+/* ===== EXPORT ===== */
+document.getElementById("export").onclick = () => {
+    const a = document.createElement("a");
+    a.download = "paint.png";
+    a.href = canvas.toDataURL();
+    a.click();
+};
+
+/* ===== IMPORT ===== */
+const fileInput = document.getElementById("fileInput");
+
+document.getElementById("import").onclick = () => {
+    fileInput.click();
+};
+
+fileInput.onchange = () => {
+    const img = new Image();
+    img.onload = () => {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+    };
+    img.src = URL.createObjectURL(fileInput.files[0]);
+};
+</script>
+
 </body>
 </html>
