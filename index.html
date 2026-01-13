@@ -1,2 +1,21 @@
-<canvas id="canvas" width="800" height="500"></canvas>
-<script src=""></script>
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>HTML Paint</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <div id="toolbar">
+    <input type="color" id="color" value="#000000">
+    <input type="range" id="size" min="1" max="20" value="4">
+    <button id="clear">Limpiar</button>
+    <button id="save">Guardar PNG</button>
+  </div>
+
+  <canvas id="canvas" width="800" height="500"></canvas>
+
+  <script src="script.js"></script>
+</body>
+</html>
