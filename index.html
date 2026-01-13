@@ -1,21 +1,99 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <title>HTML Paint</title>
-  <link rel="stylesheet" href="style.css">
+<meta charset="UTF-8">
+<title>Web Paint</title>
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #222;
+        color: white;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    #toolbar {
+        background: #333;
+        padding: 10px;
+        width: 100%;
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    canvas {
+        background: white;
+        cursor: crosshair;
+        border: 2px solid #000;
+    }
+
+    button, input {
+        cursor: pointer;
+    }
+</style>
 </head>
 <body>
 
-  <div id="toolbar">
+<div id="toolbar">
+    🎨 Color:
     <input type="color" id="color" value="#000000">
-    <input type="range" id="size" min="1" max="20" value="4">
-    <button id="clear">Limpiar</button>
-    <button id="save">Guardar PNG</button>
-  </div>
 
-  <canvas id="canvas" width="800" height="500"></canvas>
+    🖊 Tamaño:
+    <input type="range" id="size" min="1" max="30" value="5">
 
-  <script src="script.js"></script>
+    <button id="clear">🧹 Limpiar</button>
+    <button id="save">💾 Guardar</button>
+</div>
+
+<canvas id="canvas" width="800" height="500"></canvas>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+let drawing = false;
+
+const colorInput = document.getElementById("color");
+const sizeInput = document.getElementById("size");
+
+canvas.addEventListener("mousedown", () => drawing = true);
+canvas.addEventListener("mouseup", () => drawing = false);
+canvas.addEventListener("mouseleave", () => drawing = false);
+
+canvas.addEventListener("mousemove", draw);
+
+function draw(e) {
+    if (!drawing) return;
+
+    ctx.fillStyle = colorInput.value;
+    ctx.beginPath();
+    ctx.arc(
+        e.offsetX,
+        e.offsetY,
+        sizeInput.value,
+        0,
+        Math.PI * 2
+    );
+    ctx.fill();
+}
+
+// Limpiar
+document.getElementById("clear").onclick = () => {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+};
+
+// Guardar imagen
+document.getElementById("save").onclick = () => {
+    const link = document.createElement("a");
+    link.download = "dibujo.png";
+    link.href = canvas.toDataURL();
+    link.click();
+};
+</script>
+
 </body>
 </html>
+
